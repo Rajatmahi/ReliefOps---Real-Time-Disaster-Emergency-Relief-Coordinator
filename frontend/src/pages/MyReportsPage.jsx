@@ -1,0 +1,8 @@
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { FilePlus2 } from 'lucide-react'
+import { endpoints } from '../services/api'
+import { useLiveRefresh } from '../services/useLiveRefresh'
+import { Button, Card, Empty, ErrorNotice, Loading, PageHeading, SeverityPill, StatusPill } from '../components/ui'
+
+export default function MyReportsPage(){const [rows,setRows]=useState([]);const [loading,setLoading]=useState(true);const [error,setError]=useState('');async function refresh(){try{setRows(await endpoints.allIncidents());setError('')}catch(e){setError(e.message)}finally{setLoading(false)}}useEffect(()=>{refresh()},[]);useLiveRefresh(refresh);return <><PageHeading eyebrow="COMMUNITY REPORTING" title="My reports" description="Review the status of the reports you have submitted." action={<Link to="/report"><Button><FilePlus2 size={16}/>New report</Button></Link>}/><ErrorNotice error={error}/><Card className="table-card">{loading?<Loading/>:rows.length?<div className="table-wrap"><table><thead><tr><th>Report</th><th>Disaster type</th><th>Severity</th><th>Status</th><th>People affected</th><th>Date submitted</th></tr></thead><tbody>{rows.map(x=><tr key={x.id}><td><Link className="table-title" to={`/incidents/${x.id}`}>INC-{String(x.id).padStart(4,'0')}</Link></td><td>{x.disaster_type}</td><td><SeverityPill value={x.severity}/></td><td><StatusPill value={x.status}/></td><td>{x.people_affected ?? 'Not estimated'}</td><td>{new Date(x.created_at).toLocaleString()}</td></tr>)}</tbody></table></div>:<Empty>You haven’t submitted a report yet.</Empty>}</Card></>}
