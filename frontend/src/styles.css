@@ -84,3 +84,13 @@
 @media(max-width:1000px){.assignment-dispatch-workspace{grid-template-columns:1fr}.assignment-briefing-empty{min-height:180px}.assignment-incident-preview{display:grid;grid-template-columns:minmax(0,1fr) minmax(210px,.7fr);gap:12px}.assignment-incident-map,.assignment-mini-map{height:100%;min-height:220px;margin-top:0}}
 @media(max-width:760px){.dispatch-workspace-card{padding:16px}.assignment-dispatch-workspace{grid-template-columns:1fr}.assignment-incident-preview{grid-template-columns:1fr}.assignment-incident-map,.assignment-mini-map{height:210px;min-height:210px;margin-top:12px}.assignment-submit-row{align-items:stretch;flex-direction:column}.assignment-submit-row .button{width:100%}}
 @media(max-width:420px){.assignment-team-panel{padding:11px}.assignment-incident-preview{padding:12px}.team-choice{gap:7px;padding:8px}.team-choice-rank{width:23px;height:23px;flex-basis:23px}.team-choice-main small{gap:3px}.team-choice-distance{min-width:65px;padding:5px}.dispatch-panel-heading{align-items:flex-start;flex-direction:column}}
+
+/* Give administrators a clear, auditable decline path for unverified reports. */
+.incident-review-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(140px,.52fr);gap:8px}
+.incident-decline-action{min-height:42px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 12px;border:1px solid #efcbc7;border-radius:9px;background:#fff;color:#bb5149;font-size:10px;font-weight:800;transition:.16s}
+.incident-decline-action:hover{border-color:#dc8a82;background:#fff4f2;color:#a9433c}
+.review-dialog-icon.reject{background:#fff0ed;color:#c55349}
+.review-confirm-reject{background:#c65349!important;color:#fff!important;border-color:#c65349!important}
+.review-confirm-reject:hover:not(:disabled){background:#ad453d!important}
+@media(max-width:520px){.incident-review-actions{grid-template-columns:1fr}.incident-review-actions>*{width:100%}}
+.photo-upload-confirmation{display:block;margin-top:7px;color:#4f8469;font-size:9px;font-weight:600}

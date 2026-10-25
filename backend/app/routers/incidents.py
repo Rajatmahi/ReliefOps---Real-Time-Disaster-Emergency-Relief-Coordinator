@@ -43,6 +43,8 @@ def recommend_priority(incident):
 
 @router.post("", response_model=IncidentRead, status_code=status.HTTP_201_CREATED)
 def create_incident(payload: IncidentCreate, db: Session = Depends(get_db), actor: User = Depends(current_user)):
+    if not actor.name or not actor.name.strip():
+        raise HTTPException(status_code=422, detail="Add your name to your account profile before submitting an incident report")
     incident = Incident(reporter_id=actor.id, **payload.model_dump())
     db.add(incident)
     db.flush()

@@ -5,7 +5,7 @@ const links = [
   { to: '/', label: 'Operations overview', icon: Gauge, roles: ['admin','coordinator'] },
   { to: '/report', label: 'Report emergency', icon: FilePlus2, roles: ['citizen','admin','coordinator'] },
   { to: '/my-reports', label: 'My reports', icon: ClipboardList, roles: ['citizen'] },
-  { to: '/coordinator-application', label: 'Coordinator application', icon: FileCheck2, roles: ['citizen','coordinator'] },
+  { to: '/coordinator-application', label: 'Coordinator application', icon: FileCheck2, roles: ['citizen'] },
   { to: '/teams', label: 'Rescue teams', icon: Users, roles: ['admin','coordinator'] },
   { to: '/assignments', label: 'Assignments', icon: Activity, roles: ['admin','coordinator'] },
   { to: '/team-access', label: 'Team access', icon: UserCog, roles: ['admin'] },

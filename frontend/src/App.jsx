@@ -48,7 +48,7 @@ export default function App() {
     <Route path="assignments" element={user.role !== 'citizen' ? <AssignmentsPage user={user}/> : <Navigate to="/" replace/>} />
     <Route path="team-access" element={user.role === 'admin' ? <UsersPage user={user}/> : <Navigate to="/" replace/>} />
     <Route path="account" element={<AccountPage user={user} onUserChange={setUser}/>}/>
-    <Route path="coordinator-application" element={['citizen','coordinator'].includes(user.role) ? <CoordinatorApplicationPage/> : <Navigate to="/" replace/>} />
+    <Route path="coordinator-application" element={user.role === 'citizen' ? <CoordinatorApplicationPage/> : <Navigate to="/" replace/>} />
     <Route path="*" element={<Navigate to="/" replace/>}/>
   </Route></Routes>
 }

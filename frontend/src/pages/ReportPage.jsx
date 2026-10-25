@@ -51,7 +51,16 @@ export default function ReportPage({ user }) {
   }
 
   async function submit(e) {
-    e.preventDefault(); setBusy(true); setError(''); setSuccess('')
+    e.preventDefault(); setError(''); setSuccess('')
+    if (!user.name?.trim()) {
+      setError('Add your name to your account profile before submitting an incident report.')
+      return
+    }
+    if (photosBusy) {
+      setError('Wait for the selected images to finish loading before submitting the report.')
+      return
+    }
+    setBusy(true)
     const payload = {
       disaster_type: form.disaster_type.trim(), description: form.description.trim(),
       photos_data: photos.map(photo => photo.data),
@@ -75,13 +84,13 @@ export default function ReportPage({ user }) {
         <form className="form-stack" onSubmit={submit}>
           <ErrorNotice error={error}/><SuccessNotice>{success}</SuccessNotice>
           <div className="form-section-title"><span>01</span><div><b>Incident details</b><small>Incident type and description are required. Add an affected-person estimate if known.</small></div></div>
-          <Field label="Reporter name"><input value={user.name || ''} readOnly aria-readonly="true"/></Field>
+          <Field label={<>Reporter name <span className="required-mark" aria-hidden="true">*</span></>}><input value={user.name || ''} readOnly aria-readonly="true" required autoComplete="name"/><small>Your account name is required and will be included on this report.</small></Field>
           <div className="form-row">
             <Field label={<>Incident type <span className="required-mark" aria-hidden="true">*</span></>}><input name="disaster_type" required minLength="2" maxLength="60" value={form.disaster_type} onChange={change} placeholder="Flood, power outage, road closure…"/></Field>
             <Field label="Reported severity"><select name="severity" value={form.severity} onChange={change}><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="critical">Critical</option></select></Field>
           </div>
           <Field label={<>Incident details <span className="required-mark" aria-hidden="true">*</span></>}><textarea name="description" minLength="10" maxLength="5000" rows="5" required value={form.description} onChange={change} placeholder="Describe what is happening and any visible hazards…"/></Field>
-          <div className="field"><span>Photos (optional)</span><label className={`photo-upload ${photos.length>=5||photosBusy?'is-disabled':''}`} htmlFor="incident-photos"><ImagePlus size={18}/><span><b>{photosBusy?'Reading images…':photos.length>=5?'5 images selected · remove one to replace':photos.length?`Add images · ${photos.length}/5 selected`:'Add up to 5 images'}</b><small>JPG, PNG, or WebP · up to 3 MB each</small></span><input id="incident-photos" type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={photos.length>=5||photosBusy} onChange={choosePhotos}/></label>{photos.length>0&&<div className="photo-preview-grid">{photos.map((photo,index)=><div className="photo-preview" key={`${photo.name}-${index}`}><img src={photo.data} alt={`Selected incident image ${index+1}: ${photo.name}`}/><button type="button" className="photo-remove" aria-label={`Remove ${photo.name}`} onClick={()=>setPhotos(current=>current.filter((_,i)=>i!==index))}><X size={16}/></button><small title={photo.name}>{photo.name}</small></div>)}</div>}</div>
+          <div className="field"><span>Photos (optional)</span><label className={`photo-upload ${photos.length>=5||photosBusy?'is-disabled':''}`} htmlFor="incident-photos"><ImagePlus size={18}/><span><b>{photosBusy?'Reading images…':photos.length>=5?'5 images selected · remove one to replace':photos.length?`Add images · ${photos.length}/5 selected`:'Add up to 5 images'}</b><small>JPG, PNG, or WebP · up to 3 MB each</small></span><input id="incident-photos" type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={photos.length>=5||photosBusy} onChange={choosePhotos}/></label>{photos.length>0&&<><small className="photo-upload-confirmation">{photos.length} selected {photos.length===1?'image is':'images are'} attached to this report when submitted.</small><div className="photo-preview-grid">{photos.map((photo,index)=><div className="photo-preview" key={`${photo.name}-${index}`}><img src={photo.data} alt={`Selected incident image ${index+1}: ${photo.name}`}/><button type="button" className="photo-remove" aria-label={`Remove ${photo.name}`} onClick={()=>setPhotos(current=>current.filter((_,i)=>i!==index))}><X size={16}/></button><small title={photo.name}>{photo.name}</small></div>)}</div></>}</div>
           <Field label="Expected people affected (optional)"><input type="number" min="0" max="1000000" step="1" name="people_affected" value={form.people_affected} onChange={change} placeholder="Leave blank if unknown"/></Field>
           <div className="form-section-title space-top"><span>02</span><div><b>Location</b><small>Search for a place, choose a match, then adjust the pin on the map.</small></div></div>
           <LocationPicker enableCurrentLocation label={form.location_label} latitude={form.latitude} longitude={form.longitude} onChange={location=>setForm(current=>({...current,...location}))}/>
