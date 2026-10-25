@@ -33,25 +33,27 @@ export default function AccountPage({ user, onUserChange }) {
     } catch (err) { setError(err.message) } finally { setSavingPassword(false) }
   }
 
-  return <>
+  const initials = (user.name || user.email || 'U').trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('').toUpperCase()
+
+  return <div className="account-page">
     <PageHeading eyebrow="YOUR ACCOUNT" title="My account" description="Manage your profile details, sign-in security, and view your workspace access."/>
     <ErrorNotice error={error}/><SuccessNotice>{message}</SuccessNotice>
-    <Card className="account-summary-card"><div className="account-avatar"><UserRound size={25}/></div><div className="account-summary"><span className="eyebrow">SIGNED-IN ACCOUNT</span><h2>{user.name}</h2><p>{user.email}</p></div><span className="account-role"><ShieldCheck size={15}/>{roleLabel[user.role] || user.role}</span></Card>
-    <Card className="account-settings-card"><div className="section-head"><div><h3>Profile information</h3><p>Update the name shown to your team. Your sign-in email and role are managed separately.</p></div></div>
+    <Card className="account-summary-card"><div className="account-avatar" aria-hidden="true">{initials}</div><div className="account-summary"><span className="eyebrow">WORKSPACE PROFILE</span><h2>{user.name}</h2><p><Mail size={14}/>{user.email}</p></div><div className="account-summary-access"><span><ShieldCheck size={15}/>{roleLabel[user.role] || user.role}</span><small>Workspace access</small></div></Card>
+    <div className="account-settings-grid"><Card className="account-settings-card account-profile-card"><div className="section-head"><div className="account-section-heading"><span className="account-section-icon profile"><UserRound size={17}/></span><div><span className="eyebrow">PERSONAL DETAILS</span><h3>Profile information</h3></div></div><p>Update the name shown to your team. Your email and role are managed by the workspace.</p></div>
       <form className="account-profile-form" onSubmit={saveProfile}>
         <Field label="Full name"><input required minLength="2" maxLength="120" autoComplete="name" value={name} onChange={e=>setName(e.target.value)} placeholder="Your name"/></Field>
         <Field label="Email address"><div className="account-readonly"><Mail size={15}/><span>{user.email}</span><small>Used to sign in</small></div></Field>
         <Field label="Workspace role"><div className="account-readonly"><ShieldCheck size={15}/><span>{roleLabel[user.role] || user.role}</span><small>Contact an administrator to change access</small></div></Field>
-        <div className="account-form-actions"><Button disabled={savingProfile || name.trim() === user.name}>{savingProfile ? 'Saving…' : 'Save profile'}</Button></div>
+        <div className="account-form-actions"><span>Your profile details are visible to your organization.</span><Button disabled={savingProfile || name.trim() === user.name}>{savingProfile ? 'Saving…' : 'Save changes'}</Button></div>
       </form>
     </Card>
-    <Card className="account-settings-card"><div className="section-head"><div><h3>Sign-in security</h3><p>Choose a unique password of at least 12 characters.</p></div><div className="account-security-icon"><KeyRound size={17}/></div></div>
+    <Card className="account-settings-card account-security-card"><div className="section-head"><div className="account-section-heading"><span className="account-section-icon security"><KeyRound size={17}/></span><div><span className="eyebrow">ACCOUNT PROTECTION</span><h3>Sign-in security</h3></div></div><p>Change your password regularly and never share it with teammates.</p></div>
       <form className="account-password-form" onSubmit={changePassword}>
         <Field label="Current password"><input required type="password" autoComplete="current-password" value={passwordForm.current_password} onChange={e=>setPasswordForm({...passwordForm,current_password:e.target.value})}/></Field>
         <Field label="New password"><input required type="password" minLength="12" maxLength="128" autoComplete="new-password" value={passwordForm.new_password} onChange={e=>setPasswordForm({...passwordForm,new_password:e.target.value})}/></Field>
         <Field label="Confirm new password"><input required type="password" minLength="12" maxLength="128" autoComplete="new-password" value={passwordForm.confirm_password} onChange={e=>setPasswordForm({...passwordForm,confirm_password:e.target.value})}/></Field>
-        <div className="account-form-actions"><Button disabled={savingPassword}>{savingPassword ? 'Updating…' : 'Change password'}</Button></div>
+        <div className="account-form-actions"><span>Use at least 12 characters.</span><Button disabled={savingPassword}>{savingPassword ? 'Updating…' : 'Update password'}</Button></div>
       </form>
-    </Card>
-  </>
+    </Card></div>
+  </div>
 }

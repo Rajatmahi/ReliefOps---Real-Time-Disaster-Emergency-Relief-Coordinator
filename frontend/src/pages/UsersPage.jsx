@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CalendarDays, Mail, UserPlus, UserRound } from 'lucide-react'
+import { CalendarDays, Clock3, Mail, ShieldCheck, UserCheck, UserPlus, UserRound, UsersRound } from 'lucide-react'
 import { api } from '../services/api'
 import { useLiveRefresh } from '../services/useLiveRefresh'
 import { Button, Card, ErrorNotice, Field, PageHeading, SuccessNotice } from '../components/ui'
@@ -77,16 +77,23 @@ export default function UsersPage({ user }) {
     } catch (e) { setError(e.message) } finally { setReviewBusy(false) }
   }
 
+  const pendingApplications = applications.filter(application => application.status === 'pending')
+  const coordinatorCount = users.filter(account => account.role === 'coordinator').length
+
   return <>
     <PageHeading eyebrow="WORKSPACE ADMINISTRATION" title="Team access" description="Create accounts for your organization and control each person’s access." />
     <ErrorNotice error={error}/><SuccessNotice>{message}</SuccessNotice>
-    <Card className="applications-panel"><div className="section-head"><div><h3>Coordinator applications</h3><p>Review each request before granting dispatch access. Approval changes the reporter’s role; it does not create or assign a response team.</p></div><span className="application-count">{applications.filter(application=>application.status==='pending').length} pending</span></div>{applications.filter(application=>application.status==='pending').length ? <div className="application-list">{applications.filter(application=>application.status==='pending').map((application,index)=><article className="coordinator-request-card" key={application.id}>
+    <section className="team-access-command" aria-label="Team access summary">
+      <div className="team-access-command-copy"><span className="team-access-command-icon"><ShieldCheck size={20}/></span><span className="eyebrow">ACCESS GOVERNANCE</span><h2>Manage who can act in ReliefOps.</h2><p>Review coordinator requests, create organization accounts, and maintain role permissions from one place.</p></div>
+      <div className="team-access-command-stats"><div className="access-metric pending-metric"><span><Clock3 size={15}/>Awaiting review</span><strong>{pendingApplications.length}</strong><small>Coordinator requests</small></div><div className="access-metric coordinator-metric"><span><UserCheck size={15}/>Coordinators</span><strong>{coordinatorCount}</strong><small>Approved team leads</small></div><div className="access-metric accounts-metric"><span><UsersRound size={15}/>Accounts</span><strong>{users.length}</strong><small>Workspace members</small></div></div>
+    </section>
+    <Card className="applications-panel team-access-section"><div className="section-head"><div><span className="access-section-step">01 · REVIEW REQUESTS</span><h3>Coordinator applications</h3><p>Review each request before granting dispatch access. Approval changes the reporter’s role; it does not create or assign a response team.</p></div><span className="application-count">{pendingApplications.length} pending</span></div>{pendingApplications.length ? <div className="application-list">{pendingApplications.map((application,index)=><article className="coordinator-request-card" key={application.id}>
       <div className="request-card-heading"><div><span className="request-index">REQUEST {String(index+1).padStart(2,'0')}</span><h4>Coordinator access request</h4></div><span className="request-pending">Awaiting review</span></div>
       <div className="request-identity-grid"><div className="request-field"><span><UserRound size={14}/>Applicant name</span><strong>{application.applicant_name}</strong></div><div className="request-field"><span><Mail size={14}/>Email address</span><strong className="request-email">{application.applicant_email}</strong></div><div className="request-field"><span><CalendarDays size={14}/>Submitted</span><strong>{new Date(application.submitted_at).toLocaleString()}</strong></div></div>
       <div className="request-details"><div className="request-detail"><span>Why they want coordinator access</span><p>{application.motivation}</p></div><div className="request-detail"><span>Relevant experience</span><p>{application.experience || 'No experience details provided.'}</p></div></div>
       <div className="request-review"><span>Admin decision</span><div><Button variant="small" onClick={()=>openReview(application,'approve')}>Approve application</Button><Button variant="small" onClick={()=>openReview(application,'reject')}>Decline with reason</Button></div></div>
     </article>)}</div> : <div className="application-empty"><div className="application-empty-icon"><UserRound size={20}/></div><b>No applications waiting</b><p>New coordinator requests will appear here for your review.</p></div>}</Card>
-    <Card className="inline-form-card"><div className="section-head"><div><h3>Add a teammate</h3><p>Use a unique email address and an initial password of at least 12 characters.</p></div></div>
+    <Card className="inline-form-card team-access-section create-account-section"><div className="section-head"><div><span className="access-section-step">02 · ADD A MEMBER</span><h3>Create an organization account</h3><p>Use a unique email address and an initial password of at least 12 characters.</p></div></div>
       <form className="form-row align-end" onSubmit={create}>
         <Field label="Name"><input required minLength="2" maxLength="120" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/></Field>
         <Field label="Email"><input required type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/></Field>
@@ -95,7 +102,7 @@ export default function UsersPage({ user }) {
         <Button disabled={busy}><UserPlus size={16}/>{busy?'Creating…':'Create account'}</Button>
       </form>
     </Card>
-    <Card className="table-card"><div className="section-head"><div><h3>Workspace accounts</h3><p>Administrator accounts can manage the workspace and other accounts.</p></div></div>
+    <Card className="table-card team-access-section workspace-accounts-section"><div className="section-head"><div><span className="access-section-step">03 · ACCOUNT DIRECTORY</span><h3>Workspace accounts</h3><p>Review member roles and update access. Administrator accounts can manage the workspace and other accounts.</p></div></div>
       <div className="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Access</th><th>Update access</th></tr></thead><tbody>{users.map(account=><tr key={account.id}><td>{account.name}{account.id===user.id?' (you)':''}</td><td>{account.email}</td><td><span className="stock-tag healthy">{roleLabel[account.role] || account.role}</span></td><td><select aria-label={`Access for ${account.email}`} value={account.role} onChange={e=>saveRole(account,e.target.value)} disabled={account.id===user.id}><option value="citizen">Reporter</option><option value="coordinator">Coordinator</option><option value="admin">Administrator</option></select>{account.id!==user.id&&<Button variant="small" onClick={()=>{setResetting(resetting===account.id?null:account.id);setNewPassword('')}}>Reset password</Button>}{resetting===account.id&&<form className="form-row" onSubmit={e=>resetPassword(e,account)}><input aria-label={`New password for ${account.email}`} type="password" minLength="12" maxLength="128" required value={newPassword} onChange={e=>setNewPassword(e.target.value)} placeholder="New password (12+ chars)"/><Button variant="small">Save password</Button></form>}</td></tr>)}</tbody></table></div>
     </Card>
     <Card className="inline-form-card"><div className="section-head"><div><h3>Change your password</h3><p>Use a unique password and do not share it with teammates.</p></div></div>
