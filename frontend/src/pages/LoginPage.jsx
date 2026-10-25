@@ -1,9 +1,14 @@
 import { useState } from 'react'
-import { ShieldAlert, UserPlus, LogIn } from 'lucide-react'
+import { Activity, ArrowRight, CheckCircle2, FilePlus2, LogIn, Radio, ShieldAlert, ShieldCheck, UserPlus, Users } from 'lucide-react'
 import { api } from '../services/api'
 import { Button, ErrorNotice, Field } from '../components/ui'
 
 const roleLabels = { citizen: 'Reporter', coordinator: 'Coordinator', admin: 'Administrator' }
+const roleDetails = {
+  admin: { icon: ShieldCheck, description: 'Manage operations' },
+  coordinator: { icon: Users, description: 'Coordinate teams' },
+  citizen: { icon: FilePlus2, description: 'Submit a report' },
+}
 
 export default function LoginPage({ onLogin }) {
   const [mode, setMode] = useState('login')
@@ -35,12 +40,22 @@ export default function LoginPage({ onLogin }) {
     } catch (e) { setError(e.message) } finally { setBusy(false) }
   }
 
-  return <div className="login-screen"><div className="login-art"><div className="login-brand"><ShieldAlert/><b>ReliefOps</b></div><div className="art-copy"><div className="eyebrow light">TEAM COORDINATION</div><h1>A shared workspace for your response team.</h1><p>Record incidents, verify information, coordinate teams, and track relief supplies in one place.</p></div><div className="art-footer">Your organization’s coordination workspace</div></div><div className="login-main"><form className="login-form" onSubmit={submit}>
-    <div className="eyebrow">WORKSPACE ACCESS</div>
-    <div className="auth-tabs" role="tablist" aria-label="Account access"><button type="button" role="tab" aria-selected={mode === 'login'} className={mode === 'login' ? 'active' : ''} onClick={() => switchMode('login')}><LogIn size={15}/>Sign in</button><button type="button" role="tab" aria-selected={mode === 'register'} className={mode === 'register' ? 'active' : ''} onClick={() => switchMode('register')}><UserPlus size={15}/>Reporter registration</button></div>
-    {mode === 'login' ? <><h2>Sign in to your workspace</h2><p>Choose your access type. Your account permissions are checked by the server.</p><div className="role-options" aria-label="Sign-in access type">{['admin', 'coordinator', 'citizen'].map(role => <button type="button" key={role} className={loginRole === role ? 'selected' : ''} onClick={() => setLoginRole(role)}>{roleLabels[role]}</button>)}</div></> : <><h2>Create a reporter account</h2><p>New accounts can submit reports and view their own report history. An administrator creates coordinator and admin accounts.</p><Field label="Your name"><input required minLength="2" maxLength="120" autoComplete="name" value={name} onChange={e=>setName(e.target.value)} placeholder="Full name"/></Field></>}
-    <ErrorNotice error={error}/><Field label="Email"><input type="email" required autoComplete="username" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com"/></Field><Field label="Password"><input type="password" required minLength={mode === 'register' ? 12 : 1} maxLength="128" autoComplete={mode === 'register' ? 'new-password' : 'current-password'} value={password} onChange={e=>setPassword(e.target.value)} placeholder={mode === 'register' ? 'At least 12 characters' : 'Enter your password'}/></Field>
-    {mode === 'register' && <Field label="Confirm password"><input type="password" required minLength="12" maxLength="128" autoComplete="new-password" value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)} placeholder="Enter your password again"/></Field>}
-    <Button disabled={busy}>{busy ? 'Please wait…' : mode === 'register' ? 'Create reporter account' : `Sign in as ${roleLabels[loginRole]}`}</Button><div className="login-footnote">{mode === 'register' ? 'Admin and coordinator access is assigned by your organization administrator.' : loginRole === 'admin' ? 'First administrator? Create the initial admin with the private bootstrap command in the setup guide.' : 'Use the email and password associated with your organization account.'}</div>
-  </form></div></div>
+  return <main className="login-screen">
+    <section className="login-hero">
+      <div className="login-brand"><span className="login-brand-mark"><ShieldAlert size={22}/></span><span><b>ReliefOps</b><small>EMERGENCY COORDINATION</small></span></div>
+      <div className="login-hero-content"><div className="login-eyebrow"><Radio size={14}/> RESPONSE WORKSPACE</div><h1>Clarity when every moment matters.</h1><p>Bring incident reports, response teams, and operational decisions together in one coordinated workspace.</p>
+        <div className="login-flow"><div><span className="flow-icon report-flow"><FilePlus2 size={17}/></span><span><b>Report</b><small>Capture what’s happening</small></span></div><i/><div><span className="flow-icon verify-flow"><CheckCircle2 size={17}/></span><span><b>Verify</b><small>Review trusted details</small></span></div><i/><div><span className="flow-icon coordinate-flow"><Users size={17}/></span><span><b>Coordinate</b><small>Connect the right teams</small></span></div></div>
+      </div>
+      <div className="login-hero-footer"><span><Activity size={15}/> One shared operational picture</span><span>Built for your response organization</span></div>
+      <div className="hero-orb hero-orb-one"/><div className="hero-orb hero-orb-two"/>
+    </section>
+    <section className="login-panel"><form className="login-form" onSubmit={submit}>
+      <div className="login-form-heading"><div className="login-form-icon"><ShieldAlert size={19}/></div><div className="eyebrow">SECURE WORKSPACE ACCESS</div><h2>{mode === 'login' ? 'Welcome back' : 'Join as a reporter'}</h2><p>{mode === 'login' ? 'Sign in to continue to your response workspace.' : 'Create an account to submit and follow incident reports.'}</p></div>
+      <div className="auth-tabs" role="tablist" aria-label="Account access"><button type="button" role="tab" aria-selected={mode === 'login'} className={mode === 'login' ? 'active' : ''} onClick={() => switchMode('login')}><LogIn size={15}/>Sign in</button><button type="button" role="tab" aria-selected={mode === 'register'} className={mode === 'register' ? 'active' : ''} onClick={() => switchMode('register')}><UserPlus size={15}/>Reporter registration</button></div>
+      {mode === 'login' ? <div className="role-picker"><div className="role-picker-heading"><b>Choose your access</b><small>Your account permissions are verified securely.</small></div><div className="role-options" aria-label="Sign-in access type">{['admin', 'coordinator', 'citizen'].map(role => {const Icon=roleDetails[role].icon;return <button type="button" key={role} aria-pressed={loginRole===role} className={loginRole === role ? `selected role-${role}` : ''} onClick={() => setLoginRole(role)}><span className="role-icon"><Icon size={17}/></span><b>{roleLabels[role]}</b><small>{roleDetails[role].description}</small></button>})}</div></div> : <><div className="register-note"><UserPlus size={16}/><span>Reporter accounts can submit reports and track their progress. Coordinator and administrator access is assigned by your organization.</span></div><Field label="Your name"><input required minLength="2" maxLength="120" autoComplete="name" value={name} onChange={e=>setName(e.target.value)} placeholder="Full name"/></Field></>}
+      <div className="login-fields"><ErrorNotice error={error}/><Field label="Email address"><input type="email" required autoComplete="username" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com"/></Field><Field label="Password"><input type="password" required minLength={mode === 'register' ? 12 : 1} maxLength="128" autoComplete={mode === 'register' ? 'new-password' : 'current-password'} value={password} onChange={e=>setPassword(e.target.value)} placeholder={mode === 'register' ? 'At least 12 characters' : 'Enter your password'}/></Field>{mode === 'register' && <Field label="Confirm password"><input type="password" required minLength="12" maxLength="128" autoComplete="new-password" value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)} placeholder="Enter your password again"/></Field>}</div>
+      <Button disabled={busy} className="login-submit">{busy ? 'Please wait…' : mode === 'register' ? <>Create reporter account <ArrowRight size={16}/></> : <>Sign in as {roleLabels[loginRole]} <ArrowRight size={16}/></>}</Button>
+      <div className="login-footnote">{mode === 'register' ? 'Admin and coordinator access is assigned by your organization administrator.' : loginRole === 'admin' ? 'First administrator? Create the initial admin with the private bootstrap command in the setup guide.' : 'Use the email and password associated with your organization account.'}</div>
+    </form></section>
+  </main>
 }

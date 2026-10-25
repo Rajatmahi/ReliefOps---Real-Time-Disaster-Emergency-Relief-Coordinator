@@ -75,6 +75,8 @@ class Incident(Base):
     reporter_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"), nullable=False, index=True)
     disaster_type: Mapped[str] = mapped_column(String(60), nullable=False, index=True)
     description: Mapped[str] = mapped_column(Text, nullable=False)
+    photo_data: Mapped[str | None] = mapped_column(Text, nullable=True)
+    photos_data: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
     location_label: Mapped[str | None] = mapped_column(String(255))
     latitude: Mapped[float] = mapped_column(Numeric(9, 6), nullable=False)
     longitude: Mapped[float] = mapped_column(Numeric(9, 6), nullable=False)
@@ -92,6 +94,10 @@ class Incident(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
     reporter: Mapped[User] = relationship(back_populates="incidents")
     history: Mapped[list["IncidentStatusHistory"]] = relationship(back_populates="incident", cascade="all, delete-orphan")
+
+    @property
+    def reporter_name(self) -> str:
+        return self.reporter.name
 
 
 class RescueTeam(Base):

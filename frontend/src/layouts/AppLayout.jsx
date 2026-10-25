@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { Activity, ClipboardList, FileCheck2, FilePlus2, Gauge, KeyRound, LogOut, Package, ShieldAlert, Users, UserCog } from 'lucide-react'
+import { Activity, ClipboardList, FileCheck2, FilePlus2, Gauge, KeyRound, LogOut, ShieldAlert, Users, UserCog } from 'lucide-react'
 
 const links = [
   { to: '/', label: 'Operations overview', icon: Gauge, roles: ['admin','coordinator'] },
@@ -8,7 +8,6 @@ const links = [
   { to: '/coordinator-application', label: 'Coordinator application', icon: FileCheck2, roles: ['citizen','coordinator'] },
   { to: '/teams', label: 'Rescue teams', icon: Users, roles: ['admin','coordinator'] },
   { to: '/assignments', label: 'Assignments', icon: Activity, roles: ['admin','coordinator'] },
-  { to: '/inventory', label: 'Relief inventory', icon: Package, roles: ['admin','coordinator'] },
   { to: '/team-access', label: 'Team access', icon: UserCog, roles: ['admin'] },
   { to: '/account', label: 'My account', icon: KeyRound, roles: ['admin','coordinator','citizen'] },
 ]

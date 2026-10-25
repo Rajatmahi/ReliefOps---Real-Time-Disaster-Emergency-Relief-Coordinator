@@ -1,8 +1,9 @@
 from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import cast, exists, or_, select, String
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
 from app.dependencies.auth import current_user, require_roles
@@ -66,7 +67,7 @@ def list_incidents(
     db: Session = Depends(get_db),
     actor: User = Depends(current_user),
 ):
-    query = select(Incident)
+    query = select(Incident).options(joinedload(Incident.reporter))
     if before_id is not None:
         query = query.where(Incident.id < before_id).offset(0)
     if status_filter:
@@ -108,6 +109,22 @@ def get_incident(incident_id: int, db: Session = Depends(get_db), actor: User = 
         if assigned is None and not in_dispatch_range:
             raise HTTPException(status_code=404, detail="Incident not found")
     return incident
+
+
+@router.get("/{incident_id}/photo")
+def get_incident_photo(incident_id: int, db: Session = Depends(get_db), actor: User = Depends(current_user)):
+    incident = db.get(Incident, incident_id)
+    if incident is None or (actor.role == Role.CITIZEN and incident.reporter_id != actor.id):
+        raise HTTPException(status_code=404, detail="Incident photo not found")
+    if actor.role == Role.COORDINATOR:
+        assigned = db.scalar(select(Assignment.id).join(RescueTeam, Assignment.team_id == RescueTeam.id).where(Assignment.incident_id == incident_id, RescueTeam.coordinator_id == actor.id))
+        in_dispatch_range = incident.status == IncidentStatus.VERIFIED and coordinator_in_dispatch_top_k(db, incident, actor.id)
+        if assigned is None and not in_dispatch_range:
+            raise HTTPException(status_code=404, detail="Incident photo not found")
+    photos = incident.photos_data or ([incident.photo_data] if incident.photo_data else [])
+    if not photos:
+        raise HTTPException(status_code=404, detail="No photos were attached to this incident")
+    return JSONResponse({"photos_data": photos}, headers={"Cache-Control": "private, no-store"})
 
 
 @router.patch("/{incident_id}/status", response_model=IncidentRead)
@@ -159,7 +176,7 @@ def possible_duplicates(incident_id: int, db: Session = Depends(get_db), actor: 
     # Approximate local distance filter (about 1.1 km); results are suggestions for human review only.
     if actor.role == Role.COORDINATOR and db.scalar(select(Assignment.id).join(RescueTeam, Assignment.team_id == RescueTeam.id).where(Assignment.incident_id == incident_id, RescueTeam.coordinator_id == actor.id)) is None:
         raise HTTPException(status_code=404, detail="Incident not found")
-    query = select(Incident).where(
+    query = select(Incident).options(joinedload(Incident.reporter)).where(
         Incident.id != incident.id,
         Incident.disaster_type.ilike(incident.disaster_type),
         Incident.created_at >= incident.created_at - timedelta(hours=24),

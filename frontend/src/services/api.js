@@ -28,6 +28,7 @@ export const endpoints = {
     }
   },
   incident: (id) => api(`/api/incidents/${id}`),
+  incidentPhoto: (id) => api(`/api/incidents/${id}/photo`),
   history: (id) => api(`/api/incidents/${id}/history`),
   teams: () => api('/api/teams'),
   assignments: () => api('/api/assignments'),

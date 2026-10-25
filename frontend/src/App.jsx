@@ -9,7 +9,6 @@ import MyReportsPage from './pages/MyReportsPage'
 import IncidentPage from './pages/IncidentPage'
 import TeamsPage from './pages/TeamsPage'
 import AssignmentsPage from './pages/AssignmentsPage'
-import InventoryPage from './pages/InventoryPage'
 import UsersPage from './pages/UsersPage'
 import CoordinatorApplicationPage from './pages/CoordinatorApplicationPage'
 import AccountPage from './pages/AccountPage'
@@ -47,7 +46,6 @@ export default function App() {
     <Route path="incidents/:id" element={<IncidentPage user={user}/>} />
     <Route path="teams" element={user.role !== 'citizen' ? <TeamsPage user={user}/> : <Navigate to="/" replace/>} />
     <Route path="assignments" element={user.role !== 'citizen' ? <AssignmentsPage user={user}/> : <Navigate to="/" replace/>} />
-    <Route path="inventory" element={user.role !== 'citizen' ? <InventoryPage user={user}/> : <Navigate to="/" replace/>} />
     <Route path="team-access" element={user.role === 'admin' ? <UsersPage user={user}/> : <Navigate to="/" replace/>} />
     <Route path="account" element={<AccountPage user={user} onUserChange={setUser}/>}/>
     <Route path="coordinator-application" element={['citizen','coordinator'].includes(user.role) ? <CoordinatorApplicationPage/> : <Navigate to="/" replace/>} />
